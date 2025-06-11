@@ -1,0 +1,33 @@
+auth:
+  adminUser: admin
+  adminPassword: admin123
+
+extraEnvVars:
+  - name: KEYCLOAK_IMPORT
+    value: /realm/realm-export.json
+
+extraVolumeMounts:
+  - name: realm-volume
+    mountPath: /realm
+
+extraVolumes:
+  - name: realm-volume
+    configMap:
+      name: keycloak-realm
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hostname: keycloak.helix.local
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  tls: true
+  extraTls:
+    - hosts:
+        - keycloak.helix.local
+      secretName: helix-wildcard-tls
+
+service:
+  type: ClusterIP
+  ports:
+    http: 8080

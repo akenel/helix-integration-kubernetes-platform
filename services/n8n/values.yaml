@@ -1,0 +1,60 @@
+# services/n8n/values.yaml
+
+# Environment variables for n8n
+env:
+  # General n8n environment variables.
+  # Note: Some charts might move these to their own top-level keys.
+  # For n8n's official chart, these 'env' vars are often overridden by 'externalDatabase' settings etc.
+  # Best practice is to use the chart's specific configuration keys.
+  # For now, if the chart picks these up, great. If not, the 'externalDatabase' is critical.
+  - name: GENERIC_TIMEZONE
+    value: Europe/Amsterdam
+  # The N8N_HOST/PORT/PROTOCOL are usually handled by Ingress config below
+  # - name: N8N_HOST
+  #   value: n8n.helix.local
+  # - name: N8N_PORT
+  #   value: "5678"
+  # - name: N8N_PROTOCOL
+  #   value: https
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: traefik # Ensure this matches your Traefik IngressClass
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: "helix-local-ca-issuer" # Assuming this is your ClusterIssuer name
+  hosts:
+    - host: n8n.helix.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: helix-wildcard-tls # This secret should be created by Cert-Manager
+      hosts:
+        - n8n.helix.local
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 5678 # Internal service port, matches n8n's default 5678
+
+# --- IMPORTANT: External Database Configuration for Persistence ---
+# This is how the official n8n Helm chart expects external database settings.
+# Ensure these match your PostgreSQL setup.
+externalDatabase:
+  type: "postgresdb" # <--- **CRITICAL: This must be 'postgresdb' as found in logs**
+  host: "postgresql.postgres.svc.cluster.local" # Your PostgreSQL service FQDN
+  port: 5432
+  database: "n8ndb" # The database you created for n8n
+  user: "admin" # The user you created for n8n
+  password: "admin" # <--- **PASTE YOUR ACTUAL SECURE PASSWORD HERE**
+                               #       This must match what you set in PostgreSQL.
+                               #       Ideally, use a Kubernetes Secret here, but for now,
+                               #       direct value for testing is okay.
+
+# n8n Docker image settings
+image:
+  repository: n8nio/n8n
+  tag: 1.45.0 # Specify the exact version you want
+  pullPolicy: IfNotPresent # Recommended to avoid excessive pulls

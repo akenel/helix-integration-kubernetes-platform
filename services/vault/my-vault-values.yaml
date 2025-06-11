@@ -1,0 +1,37 @@
+# services/vault/my-vault-values.yaml
+
+global:
+  image:
+    repository: hashicorp/vault
+    tag: "1.19.0"
+    pullPolicy: IfNotPresent
+
+server:
+  dataStorage:
+    enabled: true
+    size: 8Gi
+    storageClass: local-path
+
+  service:
+    type: ClusterIP
+    port: 8200
+
+  # --- CORRECTED INGRESS SECTION ---
+  ingress:
+    enabled: true
+    className: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      cert-manager.io/cluster-issuer: "helix-local-ca-issuer"
+    hosts:
+      - host: vault.helix.local
+        paths:
+          - path: /          # <--- THIS MUST BE JUST THE STRING "/"
+            pathType: Prefix # <--- THIS MUST BE A SIBLING KEY TO 'path'
+            servicePort: 8200 # <--- IMPORTANT: Most Vault charts require servicePort here
+    tls:
+      - secretName: helix-wildcard-tls
+        hosts:
+          - vault.helix.local
+
+# ... (rest of your values.yaml) ...

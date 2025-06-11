@@ -1,0 +1,34 @@
+# ~/HELIX/helm-values/helm-charts/kafka/values-kafka.yaml
+
+# Disable the Zookeeper sub-chart as we are using an external Zookeeper
+zookeeper:
+  enabled: false
+
+# Configure Kafka to connect to the external Zookeeper service
+externalZookeeper:
+  servers:
+    - zookeeper.helix-infra.svc.cluster.local
+  # If Zookeeper had client authentication enabled, you'd configure it here.
+  # For now, assuming plaintext.
+  # clientPort: 2181 # This is the default, can be omitted if not changed
+
+# You might want to adjust replicaCount for Kafka for high availability
+replicaCount: 1 # Start with 1 for simplicity, can increase later (e.g., to 3)
+
+# Persistence for Kafka data (highly recommended for production)
+persistence:
+  enabled: true
+  size: 10Gi # Adjust size as needed
+  # storageClass: "local-path" # Uncomment if you want to explicitly set a storage class
+
+# Configure resource limits/requests if needed for your environment
+# resources:
+#   limits:
+#     cpu: 1000m
+#     memory: 1Gi
+#   requests:
+#     cpu: 500m
+#     memory: 512Mi
+
+# You might also need to define listeners if you plan to access Kafka from outside the cluster
+# For now, let's keep it simple with internal cluster access.

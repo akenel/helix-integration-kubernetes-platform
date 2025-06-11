@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/6xUXWvrRhD9K2WeJdmuE2MEfTBJSksTxySkL8GU8Wpkb7zaXXbHaoTRf7+MJeeDGyf3wn3SfsycPTPnjPaAXv9LIWpnIQf0Pg7qESSw1baAHC7JG9dUZBkSqIixQEbI94DWOkbWzkbZutUTKY7EWdAuU8hsKNNuoAUEkpP37n9LIV3XW8hhO45vbupR8ts/2hZ/zIrC2S8hLFYEORin0KSRXcA1/VBS9Kgkc7tbURqbyFRBm4DBFZlPS9tg3EAOo+m4HJ+ryXlZrtR4ODmbDMfl2bgcnU+HxVRNpvh7gaviTEDfkfTIm9QHV2tpPgXo7k/wiZ6UsAnUxf+lpcjmWleaIR8mEMmQYhckqEJWm+uXCtD706+2As4BmdbN4QFnjLbrB18gUwf2/GCxRm1wZQjyUZsAN1443r2LlXOqvDnmvXGL+QkufaHKWUZtKUTIH2VbVSiWfDzdvsgYxKdpqpwt9RoSGBCrQbfrP9lTdBaWCZCtD8i9KIvby//ms5ur+8Xs4goSqNHs6M/gKiFTajLFHZUv6wWyiH+sMXtVrm3bZQK6Ev/lENCqDYXBx5zzepgNs/EQ+oTFzpiFM1o1kMPf5dzxIlDshu8r79TO7Cq6cTvLXccqWfY837bhFas7SLtMaJdC3AftgubmwmCM8y6uc2FqXUGpCpq1QiPtplBrRTOl5KX5Z/zSPjbFLhgSYGcoHH8gj3vYkhR90cMfhj7eWtPIEHuJFGvD1bOOHKFN9kBlSYohh7m7VxsqdkYGvoM5UA3OUCZjFCwxRZlZMVVwJvUGLf1S5AojH3T4AHJ5VOdoZWn7DXpx0/ey9t5tT8vUtu23AAAA///s6eu+uAUAAA
+    objectset.rio.cattle.io/id: ""
+    objectset.rio.cattle.io/owner-gvk: k3s.cattle.io/v1, Kind=Addon
+    objectset.rio.cattle.io/owner-name: local-storage
+    objectset.rio.cattle.io/owner-namespace: kube-system
+  creationTimestamp: "2025-06-10T11:46:16Z"
+  generation: 1
+  labels:
+    objectset.rio.cattle.io/hash: 183f35c65ffbc3064603f43f1580d8c68a2dabd4
+  name: local-path-provisioner
+  namespace: kube-system
+  resourceVersion: "5687"
+  uid: 72b1f603-d58f-476e-aa8d-7ef386f1700a
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: local-path-provisioner
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: local-path-provisioner
+    spec:
+      containers:
+      - command:
+        - local-path-provisioner
+        - start
+        - --config
+        - /etc/config/config.json
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: rancher/local-path-provisioner:v0.0.30
+        imagePullPolicy: IfNotPresent
+        name: local-path-provisioner
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/config/
+          name: config-volume
+      dnsPolicy: ClusterFirst
+      priorityClassName: system-node-critical
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: local-path-provisioner-service-account
+      serviceAccountName: local-path-provisioner-service-account
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: local-path-config
+        name: config-volume
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2025-06-10T11:46:18Z"
+    lastUpdateTime: "2025-06-10T11:46:18Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2025-06-10T13:53:13Z"
+    lastUpdateTime: "2025-06-10T13:53:13Z"
+    message: ReplicaSet "local-path-provisioner-5cf85fd84d" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

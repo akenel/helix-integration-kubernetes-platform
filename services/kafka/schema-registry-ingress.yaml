@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: schema-registry-ingress
+  namespace: helix-core
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  tls:
+    - secretName: helix-wildcard-tls
+      hosts:
+        - schema-registry.helix.local
+  rules:
+    - host: schema-registry.helix.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: schema-registry-service
+                port:
+                  number: 8081

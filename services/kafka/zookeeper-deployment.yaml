@@ -1,0 +1,80 @@
+# zookeeper-deployment.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: helix-core # Ensure this is the same namespace as Kafka
+spec:
+  serviceName: "zookeeper-headless" # Headless service for Zookeeper
+  replicas: 1 # For a single node setup, start with 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:7.5.0 # Or another Zookeeper image, e.g., bitnami/zookeeper
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181 # Client port
+            - containerPort: 2888 # Peer port
+            - containerPort: 3888 # Leader election port
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_TICK_TIME
+              value: "2000"
+            # Add more Zookeeper configuration if needed, e.g., for multi-node
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/zookeeper/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: local-path # Ensure this matches your StorageClass
+        resources:
+          requests:
+            storage: 2Gi # Adjust size as needed
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-headless
+  namespace: helix-core
+  labels:
+    app: zookeeper
+spec:
+  ports:
+  - port: 2181
+    name: client
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  clusterIP: None # Headless service
+  selector:
+    app: zookeeper
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper # This is the service name Kafka will look for
+  namespace: helix-core
+  labels:
+    app: zookeeper
+spec:
+  ports:
+  - port: 2181
+    targetPort: 2181
+    name: client
+  selector:
+    app: zookeeper
+  type: ClusterIP

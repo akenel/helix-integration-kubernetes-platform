@@ -1,0 +1,43 @@
+# General ignores
+.DS_Store
+.env
+.env.*
+.vscode/
+*.log
+*.bak
+*.tmp
+*~
+# Linux/WSL specific
+*.swp
+.cache/
+wsl_bootstrap_version # Specific to Docker Desktop WSL issues
+
+# Node.js / JavaScript (if any)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Docker specific
+.dockerignore
+*.dockerfile
+docker-compose.yaml # Keep if you manage it, but ignore if it's auto-generated/temp
+
+# Kubernetes / Helm specific
+*.kubeconfig
+*.key
+*.crt
+*.pem
+.local/
+.helm/
+charts/ # Directories for pulled/cached charts by Helm
+crds/   # Directories for CRDs that might be copied
+*.tgz   # Helm chart packages (e.g., from helm package command)
+
+# Binaries / Executables
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.bin

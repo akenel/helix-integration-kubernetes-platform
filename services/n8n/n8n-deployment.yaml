@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: helix-core
+  labels:
+    app: n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      containers:
+        - name: n8n
+          image: n8nio/n8n:1.45.0
+          ports:
+            - containerPort: 5678
+          env:
+            - name: N8N_HOST
+              value: "n8n.helix.local"
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_PROTOCOL
+              value: "https"
+            - name: GENERIC_TIMEZONE
+              value: "Europe/Amsterdam"
+            # --- ADD THESE FOR POSTGRESQL PERSISTENCE ---
+            - name: DB_TYPE
+              value: "postgresdb"
+            - name: DB_POSTGRES_HOST
+              value: "postgresql.postgres.svc.cluster.local" # FQDN for PostgreSQL service
+            - name: DB_POSTGRES_PORT
+              value: "5432"
+            - name: DB_POSTGRES_DATABASE
+              value: "n8ndb" # You'll need to create this database in PostgreSQL
+            - name: DB_POSTGRES_USER
+              value: "n8nuser" # Choose a username
+            # This should ideally come from a Kubernetes Secret for security
+            - name: DB_POSTGRES_PASSWORD
+              value: "n8npassword_here" # <<< CHANGE THIS to a strong password
+            # --- END POSTGRESQL CONFIG ---

@@ -1,0 +1,40 @@
+# services/kafka/kafka-services.yaml
+
+---
+# Kafka ClusterIP Service (for general client access and ingress)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: helix-core # IMPORTANT: Ensure this matches your namespace
+  labels:
+    app: kafka
+spec:
+  type: ClusterIP # Or NodePort/LoadBalancer if you need external access beyond Ingress
+  ports:
+    - port: 9092
+      name: plaintext # Matches KAFKA_ADVERTISED_LISTENERS in Kafka pod
+      targetPort: 9092
+  selector:
+    app: kafka # This selector links the service to your Kafka pods
+---
+# Kafka Headless Service (CRUCIAL for StatefulSets and internal client discovery like Schema Registry)
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless # IMPORTANT: This name must match what Schema Registry uses
+  namespace: helix-core # IMPORTANT: Ensure this matches your namespace
+  labels:
+    app: kafka
+spec:
+  clusterIP: None # This makes it a headless service
+  selector:
+    app: kafka # This selector links the service to your Kafka pods
+  ports:
+    - port: 9092
+      name: plaintext # Ensure this port is exposed by Kafka
+      targetPort: 9092
+    # If Kafka has internal listener on 29092, add it here for headless service
+    - port: 29092
+      name: internal
+      targetPort: 29092

@@ -1,0 +1,75 @@
+# services/kafka/kafka-values.yaml - Optimized for Bitnami Kafka (KRaft mode)
+
+# --- General Kafka Configuration ---
+replicaCount: 3 # Recommended for production, ensures quorum for KRaft
+# You can leave this out to use chart default, but explicitly setting 3 is good practice.
+
+# --- KRaft (Kafka Raft) Configuration ---
+# By default, Bitnami Kafka Chart (4.0.0+) uses KRaft mode.
+# We explicitly disable the Zookeeper component within the chart for a clean setup.
+# This does NOT mean disabling Zookeeper *for Kafka itself*, but rather the chart's ability to provision an *external* Zookeeper.
+# In KRaft, Kafka manages its own metadata quorum, replacing Zookeeper.
+zookeeper:
+  enabled: false # Ensure the chart does NOT try to deploy its own Zookeeper
+
+# --- Persistence Configuration ---
+persistence:
+  enabled: true
+  size: 10Gi # Adjust as needed, e.g., 10Gi, 20Gi
+  storageClass: local-path # Use your local-path StorageClass
+
+# --- Listeners (Internal and External) ---
+# Ensure these match your planned access.
+# PLAINTEXT for internal communication within the cluster.
+# For external access via Ingress, we'll rely on the Ingress definition.
+listeners:
+  client:
+    protocol: PLAINTEXT
+    name: PLAINTEXT
+  internal:
+    protocol: PLAINTEXT
+    name: INTERNAL
+    # For KRaft mode, the controller listener port is often 9093.
+    # The client listener is usually 9092.
+    # The chart handles the internal configuration of these.
+
+# --- Ingress Configuration (for external access via Traefik) ---
+ingress:
+  enabled: true
+  hostname: kafka.helix.local # Your desired external hostname
+  ingressClassName: traefik # Your Traefik IngressClass
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure # Expose via Traefik's HTTPS entrypoint
+    cert-manager.io/cluster-issuer: "helix-local-ca-issuer" # Use your ClusterIssuer for TLS
+  tls: true # Enable TLS for this ingress
+
+# --- Resources (Recommended for Production) ---
+# It's good practice to set resource requests and limits.
+# The warning about "resources" in your previous output refers to this.
+controller: # Applies to Kafka brokers/controllers in KRaft mode
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+broker: # Applies to Kafka brokers if separated from controllers (not standard in KRaft)
+  resources: # May not be needed if controller takes all roles
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# You can also add more specific configurations if needed, e.g.,
+# extraEnvVars:
+#   - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+#     value: "3"
+#   - name: KAFKA_NUM_PARTITIONS
+#     value: "1"
+
+# Service type (for internal cluster access)
+service:
+  type: ClusterIP

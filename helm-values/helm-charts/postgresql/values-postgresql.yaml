@@ -1,0 +1,41 @@
+# ~/HELIX/helm-values/values-postgresql.yaml
+#
+# PostgreSQL Configuration for HELIX local dev environment
+#
+# General settings
+auth:
+  # Using simple passwords for local development.
+  # DO NOT use these in production!
+  username: "devuser"
+  password: "devpassword"
+  database: "devdb" # Default database for general use
+  replicationUsername: "repl_user" # Default replication user
+  replicationPassword: "repl_password" # Default replication password
+  # Note: The 'root' password is often auto-generated if not specified,
+  # or can be explicitly set with 'auth.postgresPassword'.
+  # For Bitnami charts, 'auth.password' is often the main user's password.
+
+# Persistence: Crucial for data not to be lost on pod restarts.
+# In k3d, this will use the local-path-provisioner by default if installed.
+persistence:
+  enabled: true
+  size: 8Gi # Allocate 8GB of storage for the database
+  # storageClass: "local-path" # Explicitly specify if needed, k3d defaults to this.
+
+# Resources: Adjust based on your system's capabilities and expected load.
+# These are conservative starting points.
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# Service: Ensure the service type is ClusterIP for internal access within the cluster.
+# Traefik will expose it externally if needed later via an Ingress.
+service:
+  type: ClusterIP
+
+# Archival (Optional, for advanced setups)
+# wal-e, wal-g etc., not needed for basic dev setup.

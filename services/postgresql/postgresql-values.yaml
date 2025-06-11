@@ -1,0 +1,21 @@
+# services/postgres/postgresql-values.yaml
+auth:
+  database: n8ndb # Or whatever your application databases will be called
+  username: admin
+  password: admin # CHANGE THIS TO A SECURE PASSWORD!
+  existingSecret: "" # If you pre-create a secret for credentials, specify its name here
+
+# You might also want to enable persistence
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi # Adjust size as needed, e.g., 8Gi, 16Gi
+    storageClass: local-path # not standard maybe specific storage class name 
+
+# If you need to access it from other namespaces, ensure the service is visible or expose appropriately
+service:
+  type: ClusterIP # Default, suitable for internal access by other pods
+  # If you needed NodePort for some reason:
+  # type: NodePort
+  # nodePorts:
+  #   postgresql: 30432 # Example NodePort

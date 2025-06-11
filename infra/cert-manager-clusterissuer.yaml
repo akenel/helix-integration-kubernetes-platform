@@ -1,0 +1,7 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: helix-local-ca-issuer # Choose a descriptive name
+spec:
+  ca:
+    secretName: cert-manager-ca-secret # This must match the secret name from step 1
