@@ -40,4 +40,6 @@ crds/   # Directories for CRDs that might be copied
 *.so
 *.dylib
 *.o
-*.bin
+*.binvault_init.json
+services/vault/vault_init.json
+services/vault/*.json
