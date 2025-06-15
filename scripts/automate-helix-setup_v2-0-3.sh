@@ -98,25 +98,32 @@ check_joke_dependencies() {
 }
 
 # Fetches and prints a random Chuck Norris joke.
-get_chuck_norris_fact() { # Renamed to get_chuck_norris_fact for consistency
-    # Only try to fetch a joke if dependencies are met
+get_chuck_norris_fact() {
+    check_internet() {
+    curl --silent --head --max-time 3 https://www.google.com > /dev/null
+    return $?
+}
+    if ! check_internet; then
+        echo "⚠️ Warning: No internet connection. Cannot fetch Chuck Norris jokes."
+        return 1
+    fi
     if check_joke_dependencies; then
         echo "😂 Here's a Chuck Norris fact for you: "
-        # Fetch a random joke from the API and extract the 'value' field
-        joke_json=$(curl -s https://api.chucknorris.io/jokes/random)
-        if [ $? -eq 0 ]; then # Check if curl command succeeded
+        joke_json=$(curl --max-time 5 -s https://api.chucknorris.io/jokes/random)
+        if [ $? -eq 0 ]; then
             joke_value=$(echo "$joke_json" | jq -r '.value' 2>/dev/null)
             if [ -n "$joke_value" ] && [ "$joke_value" != "null" ]; then
-                echo "    \"${joke_value}\" "
+                echo "    \"${joke_value}\" "
             else
-                echo "    (Couldn't retrieve a good joke right now. Even Chuck has off days.)"
+                echo "    (Couldn't retrieve a good joke right now. Even Chuck has off days.)"
             fi
         else
-            echo "    (Failed to connect to the joke API. Chuck might be busy fighting crime.)"
+            echo "    (Failed to connect to the joke API. Chuck might be busy fighting crime.)"
         fi
-        echo "" # Add a blank line for readability
+        echo ""
     fi
 }
+
 
 # --- Core Image Processing Function (now pushes to local registry) 🖼️ ---
 # Helper function to process and push a single Docker image to the local registry
@@ -344,7 +351,11 @@ check_required_tools
 echo "✅ All required tools found."
 
 # Start the local Docker registry
-start_local_registry
+# to delete the old registry, you can run: docker rm -f registry
+# k3d registry delete k3d-registry.localhost 2>/dev/null || true
+# Ensure the local registry is running before proceeding
+echo "Starting local Docker registry... 🐳"
+# start_local_registry # (started via scripts\automate-helix-cluster_v1-0-0.sh)
 
 echo "--- Pulling and importing directly specified Docker images --- 🚀"
 

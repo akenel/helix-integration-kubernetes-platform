@@ -1,0 +1,58 @@
+    # helm-values/loki-values.yaml
+
+    # Configure Loki to use S3-compatible storage (MinIO)
+    loki:
+      storage:
+        bucketNames:
+          chunks: loki-chunks  # Name of the bucket for log chunks (Loki will create this)
+          ruler: loki-ruler    # Name of the bucket for ruler configs (Loki will create this)
+          admin: loki-admin    # Name of the bucket for admin operations (Loki will create this)
+        # Use 's3' as the storage type for S3-compatible object storage
+        type: s3
+        s3:
+          endpoint: "minio-svc.helix-infra.svc.cluster.local:9000" # MinIO service endpoint within Kubernetes
+          region: "us-east-1" # Can be any valid region string, e.g., "minio-region"
+          s3forcepathstyle: true # Crucial for MinIO to correctly interpret paths
+          insecure: true # Use HTTP, necessary for local MinIO without TLS
+          accessKeyId: "minioadmin" # Your MinIO access key (default: minioadmin)
+          secretAccessKey: "minioadmin" # Your MinIO secret key (default: minioadmin)
+
+      # Ensure common config is enabled if your chart implies it (often default)
+      commonConfig:
+        replication_factor: 1 # For a single-node setup, set to 1
+
+      # Adjust the deployment mode if you have a smaller cluster or specific needs
+      # Default is usually 'microservices' or 'distributed', 'single-binary' is also an option.
+      # For a basic local setup, 'single-binary' or 'simple' might be less resource-intensive.
+      # However, the error hints at distributed components, so let's try the default distributed setup.
+
+      # Disable enterprise features if not licensed, as the error mentioned 'enterprise.enabled'
+      enterprise:
+        enabled: false
+
+      # Optional: Resource limits for smaller clusters
+      resources:
+        limits:
+          cpu: 200m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+
+    # Optional: If memcached is part of your Loki deployment for caching, you might need to enable and configure it:
+    # chunksCache:
+    #   enabled: true
+    #   memcached:
+    #     batchSize: 100
+    #     parallelism: 10
+    #   memcachedClient:
+    #     addresses: dnssrv+_memcached-client._tcp.loki-memcached-chunks.helix-infra.svc.cluster.local
+
+    # resultsCache:
+    #   enabled: true
+    #   memcached:
+    #     batchSize: 100
+    #     parallelism: 10
+    #   memcachedClient:
+    #     addresses: dnssrv+_memcached-client._tcp.loki-memcached-results.helix-infra.svc.cluster.local
+    

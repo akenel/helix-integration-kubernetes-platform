@@ -1,0 +1,48 @@
+# services/postgresql/postgresql-init-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-init-db-users
+  namespace: helix
+spec:
+  template:
+    spec:
+      containers:
+      - name: init-db-users
+        image: docker.io/bitnami/postgresql:17.5.0-debian-12-r11
+        command: ["bash", "-c"]
+        args:
+          - |
+            # All lines below MUST start at column 13 (12 spaces of indentation)
+            set -euo pipefail
+            echo "Waiting for PostgreSQL service to be ready..."
+            # Wait for postgresql service to be ready and accept connections
+            for i in $(seq 1 60); do
+              if psql -h postgresql -U postgres -d postgres -c "\q"; then # CHANGED TO postgres USER HERE
+                echo "PostgreSQL is ready."
+                break
+              fi;
+              echo "Waiting for PostgreSQL... ($i/60)"
+              sleep 1
+            done
+
+            # REMOVED THE "ALTER ROLE" LINE - postgres user is already superuser
+            # echo "Granting CREATEROLE to admin..."
+
+            echo "Creating databases and users..."
+            psql -h postgresql -U postgres -d postgres <<EOF # CHANGED TO postgres USER HERE
+            CREATE DATABASE "n8n-db";
+            CREATE DATABASE "keycloak-db";
+
+            CREATE USER "n8nuser" WITH ENCRYPTED PASSWORD 'n8npassword';
+            GRANT ALL PRIVILEGES ON DATABASE "n8n-db" TO "n8nuser";
+
+            CREATE USER "keycloakuser" WITH ENCRYPTED PASSWORD 'keycloakpassword';
+            GRANT ALL PRIVILEGES ON DATABASE "keycloak-db" TO "keycloakuser";
+            EOF
+            echo "Initialization complete." 
+        env:
+          - name: PGPASSWORD
+            value: "dbpass123"
+      restartPolicy: OnFailure
+  backoffLimit: 3

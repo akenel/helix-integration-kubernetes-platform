@@ -1,5 +1,4 @@
-# services/vault/my-vault-values.yaml
-
+# services/vault/vault-values.yaml
 global:
   image:
     repository: hashicorp/vault
@@ -26,12 +25,12 @@ server:
     hosts:
       - host: vault.helix.local
         paths:
-          - path: /          # <--- THIS MUST BE JUST THE STRING "/"
-            pathType: Prefix # <--- THIS MUST BE A SIBLING KEY TO 'path'
-            servicePort: 8200 # <--- IMPORTANT: Most Vault charts require servicePort here
+          - / # <--- THIS IS THE ONLY CHANGE: JUST THE PATH STRING HERE
     tls:
       - secretName: helix-wildcard-tls
         hosts:
           - vault.helix.local
-
-# ... (rest of your values.yaml) ...
+ui:
+  enabled: true
+  config:
+    basePath: /vault-ui

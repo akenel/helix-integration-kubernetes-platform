@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vault-ui-ingressroute
+  namespace: vault # This IngressRoute is in the same namespace as Vault
+spec:
+  entryPoints:
+    - web # This refers to Traefik's default HTTP entrypoint (mapped to 8081 on your host via k3d-proxy)
+  routes:
+    - match: PathPrefix(`/vault-ui`)
+      kind: Rule
+      services:
+        - name: vault # Name of the Vault Kubernetes service
+          port: 8200    # Target Vault's actual HTTP port inside the pod (8200)

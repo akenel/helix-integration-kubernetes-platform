@@ -80,11 +80,14 @@ run_check "Helm Installation" \
     "Helm is not installed. You'll need it to deploy charts."
 
 # --- K3d Cluster & Registry Checks ---
-run_check "HELIX K3d Cluster Running" \
-    "k3d cluster list | grep -q 'helix-cluster' || k3d cluster list | grep -q 'helix-ai-cluster'" \
-    "At least one HELIX k3d cluster (helix-cluster or helix-ai-cluster) is active. Cluster online!" \
-    "No HELIX k3d cluster found running. Please start your cluster; it's lonely out there!"
-
+run_check "K3d Cluster Existence" \
+    "k3d cluster list | grep -q 'helixstack'" \
+    "K3d cluster 'helixstack' exists and is ready for action." \
+    "K3d cluster 'helixstack' does not exist. Please create it before proceeding."
+run_check "K3d Registry Existence" \
+    "k3d registry list | grep -q 'k3d-registry.localhost'" \
+    "K3d registry 'k3d-registry.localhost' exists and is ready to serve images." \
+    "K3d registry 'k3d-registry.localhost' does not exist. Please create it before proceeding."
 run_check "Local Docker Registry Status (localhost:5000)" \
     "docker ps -f name=registry | grep -q 'registry'" \
     "Local Docker registry container is active. Your mirrored images are ready to serve!" \
